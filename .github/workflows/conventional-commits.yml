@@ -3,7 +3,7 @@ name: Conventional Commits
 on:
   pull_request:
   push:
-    branches: [development]
+    branches: [custom-br]
     paths-ignore:
       - "**/total-rewards.txt"
 

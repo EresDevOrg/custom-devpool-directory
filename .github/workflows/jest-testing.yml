@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - development
+      - custom-br
     paths-ignore:
       - "**/total-rewards.txt"
   pull_request:
