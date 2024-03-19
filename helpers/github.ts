@@ -3,7 +3,6 @@ import { Octokit } from "@octokit/rest";
 import _projects from "../projects.json";
 import opt from "../opt.json";
 import { Statistics } from "../types/statistics";
-import { RequestError } from "octokit";
 
 export type GitHubIssue = RestEndpointMethodTypes["issues"]["get"]["response"]["data"];
 export type GitHubLabel = RestEndpointMethodTypes["issues"]["listLabelsOnIssue"]["response"]["data"][0];
@@ -21,16 +20,6 @@ export enum LABELS {
 }
 
 export const octokit = new Octokit({ auth: process.env.DEVPOOL_GITHUB_API_TOKEN });
-
-export type FailedRequestInfo = {
-  status: number;
-  message: string;
-  x_ratelimit_limit?: string;
-  x_ratelimit_remaining?: string;
-  x_ratelimit_used?: string | number | undefined;
-  x_ratelimit_reset?: string;
-  x_ratelimit_resource?: string | number | undefined;
-};
 
 //=============
 // Helpers
@@ -109,20 +98,8 @@ export async function getRepoUrls(orgOrRepo: string) {
         });
         repos = res.map((repo) => repo.html_url);
       } catch (e: unknown) {
-        if ((e as RequestError).status) {
-          const requestError = e as RequestError;
-          const failureInfo: FailedRequestInfo = {
-            status: requestError.status,
-            message: requestError.message,
-            x_ratelimit_limit: requestError.response?.headers["x-ratelimit-limit"],
-            x_ratelimit_remaining: requestError.response?.headers["x-ratelimit-remaining"],
-            x_ratelimit_used: requestError.response?.headers["x-ratelimit-used"],
-            x_ratelimit_reset: requestError.response?.headers["x-ratelimit-reset"],
-            x_ratelimit_resource: requestError.response?.headers["x-ratelimit-resource"],
-          };
-          console.log("failure info: ", JSON.stringify(failureInfo));
-        }
         console.warn(`Getting ${orgOrRepo} org repositories failed: ${e}`);
+        console.log("stingified: ", JSON.stringify(e));
       }
       break;
     case 2: // owner/repo
@@ -135,19 +112,6 @@ export async function getRepoUrls(orgOrRepo: string) {
           repos.push(res.data.html_url);
         } else console.warn(`Getting repo ${params[0]}/${params[1]} failed: ${res.status}`);
       } catch (e: unknown) {
-        if ((e as RequestError).status) {
-          const requestError = e as RequestError;
-          const failureInfo: FailedRequestInfo = {
-            status: requestError.status,
-            message: requestError.message,
-            x_ratelimit_limit: requestError.response?.headers["x-ratelimit-limit"],
-            x_ratelimit_remaining: requestError.response?.headers["x-ratelimit-remaining"],
-            x_ratelimit_used: requestError.response?.headers["x-ratelimit-used"],
-            x_ratelimit_reset: requestError.response?.headers["x-ratelimit-reset"],
-            x_ratelimit_resource: requestError.response?.headers["x-ratelimit-resource"],
-          };
-          console.log("failure info: ", JSON.stringify(failureInfo));
-        }
         console.warn(`Getting repo ${params[0]}/${params[1]} failed: ${e}`);
       }
       break;
